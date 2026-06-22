@@ -119,7 +119,7 @@ com.carrentalmanager
                      sedi, veicoli, servizi e prenotazioni di esempio).
 ```
 
-## Modello dati
+## Modello dati e Diagramma ER
 
 Il database comprende 12 tabelle. Di seguito il diagramma ER, le entità principali con i relativi campi e relazioni:
 
