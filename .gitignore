@@ -1,0 +1,16 @@
+# Segreti: questo file non deve essere esposto deve rimanere in locale
+env.properties
+
+# Build Maven
+target/
+
+# File degli IDE
+.idea/
+*.iml
+.vscode/
+
+# File generati da macOS
+.DS_Store
+
+# File di log
+*.log

@@ -1,0 +1,995 @@
+{
+  "info": {
+    "name": "CarRentalManager API",
+    "description": "Collection Postman per testare il backend CarRentalManager.\n\nPrima di iniziare:\n1. Avvia il backend con: mvn spring-boot:run\n2. Esegui un login nella cartella Auth.\n3. Il token JWT viene salvato automaticamente nella variabile {{token}}.\n4. Le richieste protette useranno {{token}} come Bearer Token.\n\nUtenti demo creati dal seeder, password: password\n- admin@carrental.it → ADMIN\n- operatore@carrental.it → EMPLOYEE\n- david.conocchioli@gmail.com → CUSTOMER\n\nLa collection copre autenticazione, reset password, catalogo veicoli, CRUD veicoli, prenotazioni, profilo utente, upload avatar su Cloudinary, report statistici e casi di errore.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "auth": {
+    "type": "bearer",
+    "bearer": [
+      {
+        "key": "token",
+        "value": "{{token}}",
+        "type": "string"
+      }
+    ]
+  },
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:8080",
+      "type": "string"
+    },
+    {
+      "key": "token",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "lastVehicleId",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "lastBookingId",
+      "value": "",
+      "type": "string"
+    }
+  ],
+  "item": [
+    {
+      "name": "Auth",
+      "description": "Richieste per registrazione, login e recupero password. Login e registrazione salvano automaticamente il token JWT in {{token}}.",
+      "item": [
+        {
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/auth/register",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "auth",
+                "register"
+              ]
+            },
+            "description": "Registra un nuovo cliente. Il backend assegna automaticamente il ruolo CUSTOMER e restituisce token JWT e dati utente.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"david.conocchioli.1@gmail.com\",\n  \"password\": \"Password123\",\n  \"firstName\": \"Mario\",\n  \"lastName\": \"Rossi\",\n  \"phone\": \"+39 333 1234567\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Registrazione completata: status 201', function () { pm.response.to.have.status(201); });",
+                  "var json = pm.response.json();",
+                  "if (json && json.token) {",
+                  "    pm.collectionVariables.set('token', json.token);",
+                  "    console.log('Token JWT salvato in {{token}}');",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "name": "Register (nuovo cliente)"
+        },
+        {
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/auth/login",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "auth",
+                "login"
+              ]
+            },
+            "description": "Esegue il login dell'utente ADMIN creato dal seeder e salva il token JWT in {{token}}.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"admin@carrental.it\",\n  \"password\": \"password\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Login completato: status 200', function () { pm.response.to.have.status(200); });",
+                  "var json = pm.response.json();",
+                  "if (json && json.token) {",
+                  "    pm.collectionVariables.set('token', json.token);",
+                  "    console.log('Token JWT salvato in {{token}}');",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "name": "Login (ADMIN)"
+        },
+        {
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/auth/login",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "auth",
+                "login"
+              ]
+            },
+            "description": "Esegue il login dell'utente EMPLOYEE creato dal seeder e salva il token JWT in {{token}}.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"operatore@carrental.it\",\n  \"password\": \"password\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Login completato: status 200', function () { pm.response.to.have.status(200); });",
+                  "var json = pm.response.json();",
+                  "if (json && json.token) {",
+                  "    pm.collectionVariables.set('token', json.token);",
+                  "    console.log('Token JWT salvato in {{token}}');",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "name": "Login (EMPLOYEE)"
+        },
+        {
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/auth/login",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "auth",
+                "login"
+              ]
+            },
+            "description": "Esegue il login dell'utente CUSTOMER creato dal seeder e salva il token JWT in {{token}}.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"david.conocchioli@gmail.com\",\n  \"password\": \"password\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Login completato: status 200', function () { pm.response.to.have.status(200); });",
+                  "var json = pm.response.json();",
+                  "if (json && json.token) {",
+                  "    pm.collectionVariables.set('token', json.token);",
+                  "    console.log('Token JWT salvato in {{token}}');",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "name": "Login (cliente)"
+        },
+        {
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/auth/login",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "auth",
+                "login"
+              ]
+            },
+            "description": "Test di errore: invia una password errata e verifica la risposta 400 con ApiError.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"admin@carrental.it\",\n  \"password\": \"sbagliata\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "name": "Login - credenziali errate"
+        },
+        {
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/auth/forgot-password",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "auth",
+                "forgot-password"
+              ]
+            },
+            "description": "Richiede il reset password. Se l'email esiste il backend genera un token temporaneo e lo invia tramite Mailgun.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"david.conocchioli@gmail.com\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "name": "Forgot Password"
+        },
+        {
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/auth/reset-password",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "auth",
+                "reset-password"
+              ]
+            },
+            "description": "Imposta una nuova password usando il token ricevuto via email. Sostituisci IL_TOKEN_RICEVUTO_VIA_EMAIL con il token reale.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"token\": \"IL_TOKEN_RICEVUTO_VIA_EMAIL\",\n  \"newPassword\": \"NuovaPass1\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "name": "Reset Password"
+        }
+      ]
+    },
+    {
+      "name": "Vehicles",
+      "description": "Richieste per il catalogo veicoli. Le GET sono pubbliche; POST, PUT e DELETE richiedono token ADMIN o EMPLOYEE.",
+      "item": [
+        {
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/vehicles",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "vehicles"
+              ]
+            },
+            "description": "Restituisce tutti i veicoli presenti nel catalogo. Richiesta pubblica e non serve token."
+          },
+          "name": "Lista veicoli (pubblico)"
+        },
+        {
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/vehicles?category=LUXURY&maxPrice=2000",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "vehicles"
+              ],
+              "query": [
+                {
+                  "key": "category",
+                  "value": "LUXURY"
+                },
+                {
+                  "key": "maxPrice",
+                  "value": "2000"
+                },
+                {
+                  "key": "fuel",
+                  "value": "ELETTRICO",
+                  "disabled": true
+                }
+              ]
+            },
+            "description": "Restituisce i veicoli filtrati per categoria, prezzo massimo, se abilitato e carburante."
+          },
+          "name": "Lista veicoli con filtri"
+        },
+        {
+          "name": "Ricerca veicoli per testo (?q=)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/vehicles?q=fiat",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "vehicles"
+              ],
+              "query": [
+                {
+                  "key": "q",
+                  "value": "fiat"
+                }
+              ]
+            },
+            "description": "Cerca il testo indicato nella marca o nel modello del veicolo ignorando lettere maiuscole e minuscole."
+          },
+          "response": []
+        },
+        {
+          "name": "Lista veicoli paginata",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/vehicles/paged?page=0&size=5&sort=pricePerDay,asc",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "vehicles",
+                "paged"
+              ],
+              "query": [
+                {
+                  "key": "page",
+                  "value": "0"
+                },
+                {
+                  "key": "size",
+                  "value": "5"
+                },
+                {
+                  "key": "sort",
+                  "value": "pricePerDay,asc"
+                }
+              ]
+            },
+            "description": "Restituisce i veicoli in formato paginato. Puoi modificare page, size e sort dalla query string."
+          },
+          "response": []
+        },
+        {
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/vehicles/1",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "vehicles",
+                "1"
+              ]
+            },
+            "description": "Restituisce il dettaglio di un singolo veicolo. Modifica l'id nel path per cercare un altro veicolo."
+          },
+          "name": "Dettaglio veicolo per id (pubblico)"
+        },
+        {
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/vehicles",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "vehicles"
+              ]
+            },
+            "description": "Crea un nuovo veicolo. Richiede token ADMIN o EMPLOYEE. Dopo la creazione salva l'id in {{lastVehicleId}}.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"vehicleType\": \"CAR\",\n  \"brand\": \"Audi\",\n  \"model\": \"A3\",\n  \"year\": 2024,\n  \"category\": \"PREMIUM\",\n  \"transmission\": \"AUTOMATICA\",\n  \"fuel\": \"DIESEL\",\n  \"seats\": 5,\n  \"pricePerDay\": 75.0,\n  \"licensePlate\": \"GA999GA\",\n  \"image\": \"https://example.com/audi-a3.jpg\",\n  \"description\": \"Audi A3 2024\",\n  \"numberOfDoors\": 5,\n  \"bodyType\": \"BERLINA\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Veicolo creato: status 201', function () { pm.response.to.have.status(201); });",
+                  "var json = pm.response.json();",
+                  "if (json && json.id) {",
+                  "    pm.collectionVariables.set('lastVehicleId', json.id);",
+                  "    console.log('Id veicolo salvato in {{lastVehicleId}}:', json.id);",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "name": "Crea veicolo (ADMIN/EMPLOYEE)"
+        },
+        {
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/vehicles/{{lastVehicleId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "vehicles",
+                "{{lastVehicleId}}"
+              ]
+            },
+            "description": "Aggiorna il veicolo salvato in {{lastVehicleId}}. Richiede token ADMIN o EMPLOYEE.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"vehicleType\": \"CAR\",\n  \"brand\": \"Audi\",\n  \"model\": \"A3 Sportback\",\n  \"year\": 2024,\n  \"category\": \"PREMIUM\",\n  \"transmission\": \"AUTOMATICA\",\n  \"fuel\": \"DIESEL\",\n  \"seats\": 5,\n  \"pricePerDay\": 80.0,\n  \"licensePlate\": \"GA999GA\",\n  \"description\": \"Prezzo aggiornato\",\n  \"numberOfDoors\": 5,\n  \"bodyType\": \"BERLINA\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "name": "Aggiorna veicolo (ADMIN/EMPLOYEE)"
+        },
+        {
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/vehicles/{{lastVehicleId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "vehicles",
+                "{{lastVehicleId}}"
+              ]
+            },
+            "description": "Elimina il veicolo salvato in {{lastVehicleId}}. Se va a buon fine risponde 204 No Content."
+          },
+          "name": "Elimina veicolo (ADMIN/EMPLOYEE)"
+        },
+        {
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "",
+                "disabled": true
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/vehicles",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "vehicles"
+              ]
+            },
+            "description": "Test di sicurezza: crea un veicolo senza token valido. La richiesta deve essere negata.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"vehicleType\": \"CAR\",\n  \"brand\": \"Fiat\",\n  \"model\": \"500\",\n  \"year\": 2023,\n  \"category\": \"BASIC\",\n  \"transmission\": \"MANUALE\",\n  \"fuel\": \"BENZINA\",\n  \"seats\": 4,\n  \"pricePerDay\": 30.0,\n  \"licensePlate\": \"HH111HH\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "auth": {
+              "type": "noauth"
+            }
+          },
+          "name": "Crea veicolo senza token (403)"
+        }
+      ]
+    },
+    {
+      "name": "Bookings",
+      "description": "Richieste per le prenotazioni. Il cliente può creare e vedere le proprie prenotazioni; EMPLOYEE e ADMIN possono vedere, approvare, rifiutare e chiudere tutte le prenotazioni.",
+      "item": [
+        {
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/bookings",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "bookings"
+              ]
+            },
+            "description": "Crea una prenotazione senza servizi accessori. Esegui prima Login (cliente). Il backend calcola automaticamente il prezzo totale e salva l'id in {{lastBookingId}}.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"vehicleId\": 6,\n  \"pickupBranchId\": 1,\n  \"startDate\": \"2026-07-01\",\n  \"endDate\": \"2026-07-05\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "auth": {
+              "type": "noauth"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Prenotazione senza servizi creata: status 201', function () { pm.response.to.have.status(201); });",
+                  "var json = pm.response.json();",
+                  "if (json && json.id) {",
+                  "    pm.collectionVariables.set('lastBookingId', json.id);",
+                  "    console.log('Id prenotazione salvato in {{lastBookingId}}:', json.id);",
+                  "}",
+                  "console.log('Prezzo senza servizi:', json.totalPrice);",
+                  "console.log('Servizi associati:', JSON.stringify(json.services));"
+                ]
+              }
+            }
+          ],
+          "name": "Crea prenotazione senza servizi (cliente)"
+        },
+        {
+          "name": "Crea prenotazione con servizi (cliente)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/bookings",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "bookings"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"vehicleId\": 6,\n  \"pickupBranchId\": 1,\n  \"startDate\": \"2026-07-01\",\n  \"endDate\": \"2026-07-03\",\n  \"serviceIds\": [\n    1,\n    2\n  ]\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "description": "Crea una prenotazione con servizi accessori. Il backend somma il prezzo dei servizi alla tariffa giornaliera e salva l'id in {{lastBookingId}}."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Prenotazione con servizi creata: status 201', function () { pm.response.to.have.status(201); });",
+                  "var json = pm.response.json();",
+                  "if (json && json.id) {",
+                  "    pm.collectionVariables.set('lastBookingId', json.id);",
+                  "    console.log('Id prenotazione salvato in {{lastBookingId}}:', json.id);",
+                  "}",
+                  "console.log('Prezzo con servizi:', json.totalPrice);",
+                  "console.log('Servizi associati:', JSON.stringify(json.services));"
+                ]
+              }
+            }
+          ],
+          "response": []
+        },
+        {
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/bookings/me",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "bookings",
+                "me"
+              ]
+            },
+            "description": "Restituisce le prenotazioni dell'utente autenticato."
+          },
+          "name": "Le mie prenotazioni (cliente)"
+        },
+        {
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/bookings",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "bookings"
+              ]
+            },
+            "description": "Restituisce tutte le prenotazioni. Richiede token EMPLOYEE o ADMIN."
+          },
+          "name": "Tutte le prenotazioni (ADMIN/EMPLOYEE)"
+        },
+        {
+          "name": "Tutte le prenotazioni paginata (ADMIN/EMPLOYEE)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/bookings/paged?page=0&size=5",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "bookings",
+                "paged"
+              ],
+              "query": [
+                {
+                  "key": "page",
+                  "value": "0"
+                },
+                {
+                  "key": "size",
+                  "value": "5"
+                }
+              ]
+            },
+            "description": "Restituisce tutte le prenotazioni in formato paginato. Richiede token EMPLOYEE o ADMIN."
+          },
+          "response": []
+        },
+        {
+          "request": {
+            "method": "PUT",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/bookings/{{lastBookingId}}/approve",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "bookings",
+                "{{lastBookingId}}",
+                "approve"
+              ]
+            },
+            "description": "Approva la prenotazione salvata in {{lastBookingId}} e invia un'email di conferma tramite Mailgun. Richiede token EMPLOYEE o ADMIN."
+          },
+          "name": "Approva prenotazione (ADMIN/EMPLOYEE)"
+        },
+        {
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/bookings/{{lastBookingId}}/reject",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "bookings",
+                "{{lastBookingId}}",
+                "reject"
+              ]
+            },
+            "description": "Rifiuta la prenotazione salvata in {{lastBookingId}} salvando anche la motivazione. Richiede token EMPLOYEE o ADMIN.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"reason\": \"Veicolo non disponibile per le date richieste\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "name": "Rifiuta prenotazione (ADMIN/EMPLOYEE)"
+        },
+        {
+          "name": "Chiudi prenotazione (ADMIN/EMPLOYEE)",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/bookings/{{lastBookingId}}/close",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "bookings",
+                "{{lastBookingId}}",
+                "close"
+              ]
+            },
+            "description": "Chiude una prenotazione già approvata. Richiede token EMPLOYEE o ADMIN."
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "User",
+      "description": "Richieste per profilo utente e caricamento immagine profilo su Cloudinary.",
+      "item": [
+        {
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/users/me",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "users",
+                "me"
+              ]
+            },
+            "description": "Restituisce i dati del profilo dell'utente autenticato."
+          },
+          "name": "Il mio profilo"
+        },
+        {
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/users/me/avatar",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "users",
+                "me",
+                "avatar"
+              ]
+            },
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "file",
+                  "type": "file",
+                  "src": "/percorso/della/tua/immagine.jpg",
+                  "description": "Seleziona un'immagine dal tuo computer (campo di tipo File)."
+                }
+              ]
+            },
+            "description": "Carica una nuova immagine profilo su Cloudinary e salva l'URL nell'utente autenticato. Nel campo file seleziona un'immagine dal computer."
+          },
+          "name": "Carica avatar (Cloudinary)"
+        }
+      ]
+    },
+    {
+      "name": "Reports",
+      "description": "Richieste statistiche basate su aggregazioni. Accesso riservato a EMPLOYEE e ADMIN.",
+      "item": [
+        {
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/reports/revenue-by-branch",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "reports",
+                "revenue-by-branch"
+              ]
+            },
+            "description": "Restituisce l'incasso totale per ogni sede di ritiro, ordinato dal valore più alto. Richiede token EMPLOYEE o ADMIN."
+          },
+          "name": "Incassi per sede (aggregazione SUM)"
+        },
+        {
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/reports/most-rented-vehicles",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "reports",
+                "most-rented-vehicles"
+              ]
+            },
+            "description": "Restituisce la classifica dei veicoli più noleggiati, usando la targa come riferimento. Richiede token EMPLOYEE o ADMIN."
+          },
+          "name": "Veicoli più noleggiati (aggregazione COUNT)"
+        }
+      ]
+    }
+  ]
+}
