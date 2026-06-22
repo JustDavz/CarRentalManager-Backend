@@ -121,7 +121,9 @@ com.carrentalmanager
 
 ## Modello dati
 
-Il database comprende **12 tabelle**. Di seguito le entità principali con i relativi campi.
+Il database comprende 12 tabelle. Di seguito il diagramma ER, le entità principali con i relativi campi e relazioni:
+
+![Diagramma ER del database](docs/er-diagram.png)
 
 ### `vehicles` (entità padre)
 
